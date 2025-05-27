@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <locale.h>
+#include <wchar.h>
 
 #define MAX_LINE 512
 
@@ -66,6 +67,45 @@ void free_anime_list(Anime* head) {
         free(temp);
     }
 }
+// n行判定
+int is_in_row(const char* title, const wchar_t* row_chars, size_t row_len) {
+    wchar_t wtitle[100];
+    mbstowcs(wtitle, title, 100);
+
+    for (size_t i = 0; i < row_len; i++) {
+        if (wtitle[0] == row_chars[i]) return 1;
+    }
+    return 0;
+}
+
+// メニュー
+void display_menu() {
+    printf("\n===== メニュー =====\n");
+    printf("1. 全て表示\n");
+    printf("2. あ行のみ表示\n");
+    printf("3. か行のみ表示\n");
+    printf("4. さ行のみ表示\n");
+    printf("5. た行のみ表示\n");
+    printf("6. な行のみ表示\n");
+    printf("7. は行のみ表示\n");
+    printf("8. ま行のみ表示\n");
+    printf("9. や行のみ表示\n");
+    printf("10. ら行のみ表示\n");
+    printf("11. わ行のみ表示\n");
+    printf("12. 終了\n");
+    printf("選択してください: ");
+}
+
+// 行表示
+void display_row(Anime* list, const wchar_t* row, size_t row_len, const char* row_name) {
+    printf("\n--- %s行 ---\n", row_name);
+    for (Anime* cur = list; cur != NULL; cur = cur->next) {
+        if (is_in_row(cur->title, row, row_len)) {
+            printf("タイトル: %s\nジャンル: %s\nお気に入り: %s\nメモ: %s\n\n",
+                cur->title, cur->genre, cur->favorite ? "★" : "-", cur->memo);
+        }
+    }
+}
 
 int main() {
     setlocale(LC_ALL, ""); // 日本語
@@ -73,12 +113,73 @@ int main() {
     const char* filename = "animelist.csv";
     Anime* anime_list = load_csv(filename);
 
-    if (anime_list) {
-        display_anime_list(anime_list);
-        free_anime_list(anime_list);
-    } else {
+    if (!anime_list) {
         printf("データの読み込みに失敗\n");
+        return 1;
     }
+
+    // 日本語行の文字配列
+    wchar_t A[] = {L'あ',L'い',L'う',L'え',L'お',L'ア',L'イ',L'ウ',L'エ',L'オ'};
+    wchar_t K[] = {L'か',L'き',L'く',L'け',L'こ',L'カ',L'キ',L'ク',L'ケ',L'コ'};
+    wchar_t S[] = {L'さ',L'し',L'す',L'せ',L'そ',L'サ',L'シ',L'ス',L'セ',L'ソ'};
+    wchar_t T[] = {L'た',L'ち',L'つ',L'て',L'と',L'タ',L'チ',L'ツ',L'テ',L'ト'};
+    wchar_t N[] = {L'な',L'に',L'ぬ',L'ね',L'の',L'ナ',L'ニ',L'ヌ',L'ネ',L'ノ'};
+    wchar_t H[] = {L'は',L'ひ',L'ふ',L'へ',L'ほ',L'ハ',L'ヒ',L'フ',L'ヘ',L'ホ'};
+    wchar_t M[] = {L'ま',L'み',L'む',L'め',L'も',L'マ',L'ミ',L'ム',L'メ',L'モ'};
+    wchar_t Y[] = {L'や',L'ゆ',L'よ',L'ヤ',L'ユ',L'ヨ'};
+    wchar_t R[] = {L'ら',L'り',L'る',L'れ',L'ろ',L'ラ',L'リ',L'ル',L'レ',L'ロ'};
+    wchar_t W[] = {L'わ',L'を',L'ん',L'ワ',L'ヲ',L'ン'};
+
+
+    int choice;
+
+    do {
+        display_menu();
+        scanf("%d", &choice);
+        getchar();
+
+        switch (choice) {
+            case 1:
+                display_anime_list(anime_list);
+                break;
+            case 2:
+                display_row(anime_list, A, sizeof(A)/sizeof(wchar_t), "あ");
+                break;
+            case 3:
+                display_row(anime_list, K, sizeof(K)/sizeof(wchar_t), "か"); 
+                break;
+            case 4:
+                display_row(anime_list, S, sizeof(S)/sizeof(wchar_t), "さ"); 
+                break;
+            case 5:
+                display_row(anime_list, T, sizeof(T)/sizeof(wchar_t), "た"); 
+                break;
+            case 6:
+                display_row(anime_list, N, sizeof(N)/sizeof(wchar_t), "な"); 
+                break;
+            case 7:
+                display_row(anime_list, H, sizeof(H)/sizeof(wchar_t), "は"); 
+                break;
+            case 8:
+                display_row(anime_list, M, sizeof(M)/sizeof(wchar_t), "ま"); 
+                break;
+            case 9: 
+                display_row(anime_list, Y, sizeof(Y)/sizeof(wchar_t), "や"); 
+                break;
+            case 10: 
+                display_row(anime_list, R, sizeof(R)/sizeof(wchar_t), "ら"); 
+                break;
+            case 11: 
+                display_row(anime_list, W, sizeof(W)/sizeof(wchar_t), "わ"); 
+                break;
+            case 12: 
+                printf("終了\n"); 
+                break;
+            default: 
+                printf("無効な選択肢\n"); 
+                break;
+        }
+    } while (choice != 12);
 
     return 0;
 }
